@@ -1,0 +1,85 @@
+创建usr/local/redis目录
+wget http://download.redis.io/releases/redis-3.2.8.tar.gz
+tar xzvf redis-3.2.8.tar.gz
+cd redis-3.2.8
+make
+可执行二进制文件已被编译好，就是src/redis-server
+
+在usr/local/redis目录中
+mkdir redis-cluster
+cd redis-cluster
+mkdir 7001 7002 7003 7004 7005 7006
+cd 7001
+vim redis.conf
+把下面内容粘贴进去，保存退出
+port 7001
+cluster-enabled yes
+cluster-config-file nodes.conf
+cluster-node-timeout 5000
+appendonly yes
+
+然后分别把nodes.conf拷贝到其它目录，并修改端口号
+把编译好的redis-server文件拷贝到redis-cluster目录
+进到每个目录里，启动redis
+cd 7001
+../redis-server ./redis.conf
+这样六个redis实例就各自单独运行了，每个实例都有一个不变的ID，在集群中标识自己，而不是依赖于IP和Port
+
+在一个ruby写的工具redis-trib的帮助下，可以创建集群，检查集群，重新分片集群，位于src/redis-trib.rb
+
+为了运行它，要安装一个东西，gem install redis
+如果发现没有gem命令的话，先运行yum install rubygems，然后再次运行gem install redis
+
+然后运行下面命令创建集群
+./redis-trib.rb create --replicas 1 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 127.0.0.1:7006
+因为新建集群所以用create命令，--replicas 1的意思是每个主节点都有一个从节点，后面一串是用于创建集群的所有实例节点
+
+>>> Creating cluster
+>>> Performing hash slots allocation on 6 nodes...
+Using 3 masters:
+127.0.0.1:7001
+127.0.0.1:7002
+127.0.0.1:7003
+Adding replica 127.0.0.1:7004 to 127.0.0.1:7001
+Adding replica 127.0.0.1:7005 to 127.0.0.1:7002
+Adding replica 127.0.0.1:7006 to 127.0.0.1:7003
+M: 11a72fd1c4dd65b12ea76a4e00beb214c63acf16 127.0.0.1:7001
+   slots:0-5460 (5461 slots) master
+M: 57af46428ebd2be12b751307cae8d4a71925249d 127.0.0.1:7002
+   slots:5461-10922 (5462 slots) master
+M: b3637a08cb9a963bc7467fce0f851beebc36d9cb 127.0.0.1:7003
+   slots:10923-16383 (5461 slots) master
+S: c8c4ea4ac9052e98a9eb165a928c57b4032f1677 127.0.0.1:7004
+   replicates 11a72fd1c4dd65b12ea76a4e00beb214c63acf16
+S: cd9655b6f96f897584ec96ba7b2b4694d463c0e3 127.0.0.1:7005
+   replicates 57af46428ebd2be12b751307cae8d4a71925249d
+S: 13f157355097453dd00789637978740eb1ba24af 127.0.0.1:7006
+   replicates b3637a08cb9a963bc7467fce0f851beebc36d9cb
+Can I set the above configuration? (type 'yes' to accept): yes
+>>> Nodes configuration updated
+>>> Assign a different config epoch to each node
+>>> Sending CLUSTER MEET messages to join the cluster
+Waiting for the cluster to join...
+>>> Performing Cluster Check (using node 127.0.0.1:7001)
+M: 11a72fd1c4dd65b12ea76a4e00beb214c63acf16 127.0.0.1:7001
+   slots:0-5460 (5461 slots) master
+   1 additional replica(s)
+S: 13f157355097453dd00789637978740eb1ba24af 127.0.0.1:7006
+   slots: (0 slots) slave
+   replicates b3637a08cb9a963bc7467fce0f851beebc36d9cb
+S: cd9655b6f96f897584ec96ba7b2b4694d463c0e3 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 57af46428ebd2be12b751307cae8d4a71925249d
+M: b3637a08cb9a963bc7467fce0f851beebc36d9cb 127.0.0.1:7003
+   slots:10923-16383 (5461 slots) master
+   1 additional replica(s)
+M: 57af46428ebd2be12b751307cae8d4a71925249d 127.0.0.1:7002
+   slots:5461-10922 (5462 slots) master
+   1 additional replica(s)
+S: c8c4ea4ac9052e98a9eb165a928c57b4032f1677 127.0.0.1:7004
+   slots: (0 slots) slave
+   replicates 11a72fd1c4dd65b12ea76a4e00beb214c63acf16
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
