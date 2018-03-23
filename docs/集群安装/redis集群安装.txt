@@ -11,19 +11,17 @@ cd redis-cluster
 mkdir 7001 7002 7003 7004 7005 7006
 cd 7001
 vim redis.conf
-把下面内容粘贴进去，保存退出
-port 7001
-cluster-enabled yes
-cluster-config-file nodes.conf
-cluster-node-timeout 5000
-appendonly yes
+把配置文件内容粘贴进去，保存退出
 
-然后分别把nodes.conf拷贝到其它目录，并修改端口号
+然后分别把redis.conf拷贝到其它目录，并修改端口号
 把编译好的redis-server文件拷贝到redis-cluster目录
 进到每个目录里，启动redis
 cd 7001
 ../redis-server ./redis.conf
 这样六个redis实例就各自单独运行了，每个实例都有一个不变的ID，在集群中标识自己，而不是依赖于IP和Port
+
+停止节点命令
+./redis-cli -p 7001 shutdown
 
 在一个ruby写的工具redis-trib的帮助下，可以创建集群，检查集群，重新分片集群，位于src/redis-trib.rb
 
