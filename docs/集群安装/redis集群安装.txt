@@ -1,5 +1,5 @@
 创建usr/local/redis目录
-wget http://download.redis.io/releases/redis-3.2.8.tar.gz
+wget http://download.redis.io/releases/redis-3.2.8.tar.gz或http://download.redis.io/releases/redis-3.2.11.tar.gz
 tar xzvf redis-3.2.8.tar.gz
 cd redis-3.2.8
 make
@@ -26,7 +26,7 @@ cd 7001
 在一个ruby写的工具redis-trib的帮助下，可以创建集群，检查集群，重新分片集群，位于src/redis-trib.rb
 
 为了运行它，要安装一个东西，gem install redis
-如果发现没有gem命令的话，先运行yum install rubygems，然后再次运行gem install redis
+如果发现没有gem命令的话，先安装ruby，然后再次运行gem install redis
 
 然后运行下面命令创建集群
 ./redis-trib.rb create --replicas 1 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 127.0.0.1:7006

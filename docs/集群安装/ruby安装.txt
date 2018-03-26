@@ -1,0 +1,13 @@
+yum erase ruby ruby-libs ruby-mode ruby-rdoc ruby-irb ruby-ri ruby-docs
+
+yum install openssl-devel zlib-devel gcc gcc-c++ make autoconf readline-devel curl-devel expat-devel gettext-devel
+
+wget https://cache.ruby-lang.org/pub/ruby/2.3/ruby-2.3.6.tar.gz
+
+cd ruby-2.3.6
+
+./configure --enable-shared --enable-pthread --prefix=/usr
+
+make
+
+make install
